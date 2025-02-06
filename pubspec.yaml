@@ -1,0 +1,73 @@
+    name: outs
+    description: Un'app per trovare la community per eventi outdoor.
+    version: 1.0.0+1
+
+    environment:
+      sdk: ">=3.0.0 <4.0.0"
+
+    dependencies:
+      flutter:
+        sdk: flutter
+
+      # Icone FontAwesome
+      font_awesome_flutter: ^10.4.0
+
+      # Firestore e Firebase
+      cloud_firestore: ^5.6.2
+      firebase_core: ^3.10.1
+      firebase_auth: ^5.4.1
+      firebase_storage: ^12.4.1
+      flutter_dotenv: ^5.0.2
+      
+
+      # Google Sign In
+      google_sign_in: ^6.2.2
+
+      # Per aprire link esterni
+      url_launcher: ^6.1.11
+
+      # Gestione date e formati
+      intl: ^0.19.0
+
+      # Mappe, Places e Web Services
+      google_maps_flutter: ^2.2.5
+      flutter_google_places: ^0.3.0
+      google_maps_webservice: ^0.0.19
+      geolocator: ^13.0.2
+
+
+    dependency_overrides:
+      google_api_headers:
+        git:
+          url: https://github.com/albibare/google_api_headers.git
+          ref: main
+      
+      # Localizzazioni Flutter
+      flutter_localizations:
+        sdk: flutter
+
+      # Varie
+      rxdart: ^0.26.0
+      image_picker: ^0.8.7+3
+      file_picker: ^5.2.2
+
+    dev_dependencies:
+      flutter_test:
+        sdk: flutter
+      flutter_lints: ^5.0.0
+      geocoding: ^2.0.0
+
+
+    flutter:
+      uses-material-design: true
+
+      assets:
+        - assets/logo.png
+        - assets/CICLISMO.png
+        - assets/Podismo.png
+        - assets/E-MTB - MTB.png
+        - assets/GRAVEL.png
+        - assets/BICI DA CORSA.png
+        - assets/Trail Running.png
+        - assets/Escursionismo.png
+        - assets/profile.jpg
