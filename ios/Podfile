@@ -1,0 +1,28 @@
+# Definisce il target minimo di iOS
+platform :ios, '13.0'
+
+# Indica di usare framework dinamici
+use_frameworks!
+use_modular_headers!
+
+target 'Runner' do
+  # Includi le dipendenze di Flutter
+  install_all_flutter_pods File.dirname(File.realpath(__FILE__))
+
+  # Dipendenze di Firebase
+  pod 'Firebase/Core'
+  pod 'Firebase/Auth'
+  pod 'Firebase/Firestore'
+  pod 'Firebase/Storage'
+  pod 'Firebase/Messaging'
+  pod 'Firebase/Analytics'
+
+  # Google Maps (se lo usi)
+  pod 'GoogleMaps'
+  pod 'GooglePlaces'
+
+  target 'RunnerTests' do
+    inherit! :search_paths
+    # Pods per testing
+  end
+end
