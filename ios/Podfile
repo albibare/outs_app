@@ -1,12 +1,5 @@
-# Uncomment this line to define a global platform for your project
-platform :ios, '13.0'
-
-# CocoaPods analytics disabled
+platform :ios, '12.0'
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
-
-# Incrementiamo l'uso di framework dinamici e moduli
-use_frameworks!
-use_modular_headers!
 
 project 'Runner', {
   'Debug' => :debug,
@@ -15,6 +8,7 @@ project 'Runner', {
 }
 
 def parse_flutter_build_mode
+  # Se FLUTTER_BUILD_MODE non è impostato, controlliamo la configurazione
   if ENV['FLUTTER_BUILD_MODE'] == nil
     if ENV['CONFIGURATION'] == 'Release'
       return 'release'
@@ -28,34 +22,35 @@ def parse_flutter_build_mode
 end
 
 flutter_build_mode = parse_flutter_build_mode
-# Carica le variabili generati da Flutter (se esiste lo script)
+
+# Se Flutter ha creato un file flutter_export_environment.sh, lo carichiamo
 if File.exist?('../flutter_export_environment.sh')
   require_relative '../flutter_export_environment'
 end
 
 def flutter_root
-  generated_xcode_build_settings_path = File.expand_path(File.join('Flutter', 'Generated.xcconfig'), __dir__)
+  generated_xcode_build_settings_path = File.expand_path(
+    File.join('Flutter', 'Generated.xcconfig'),
+    __dir__
+  )
   unless File.exist?(generated_xcode_build_settings_path)
-    raise "#{generated_xcode_build_settings_path} must exist. If you're running pod install manually, make sure \"flutter pub get\" is executed first"
+    raise "#{generated_xcode_build_settings_path} must exist. 
+           If you're running pod install manually, make sure \"flutter pub get\" is executed first"
   end
   File.dirname(File.dirname(generated_xcode_build_settings_path))
 end
 
-# Carica i metodi necessari da podhelper.rb
+# Carica le funzioni di Flutter (podhelper.rb)
 require File.expand_path(File.join('packages', 'flutter_tools', 'bin', 'podhelper'), flutter_root)
 
 target 'Runner' do
+  # Installa le dipendenze di Flutter (engine, plugin, ecc.)
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
 
-  # Esempio di dipendenze aggiuntive (Firebase, Google Maps, ecc.):
-  pod 'Firebase/Core'
-  pod 'Firebase/Auth'
-  pod 'Firebase/Firestore'
-  pod 'Firebase/Storage'
-  pod 'Firebase/Messaging'
-  pod 'Firebase/Analytics'
-  pod 'GoogleMaps'
-  pod 'GooglePlaces'
+  # Aggiungi qui i tuoi pod manuali se servono (Firebase, Google Maps, ecc.)
+  # es:
+  # pod 'Firebase/Auth'
+  # pod 'GoogleMaps'
 
   target 'RunnerTests' do
     inherit! :search_paths
