@@ -1,29 +1,69 @@
-# Definisce il target minimo di iOS
+# Uncomment this line to define a global platform for your project
 platform :ios, '13.0'
 
-# Indica di usare framework dinamici
+# CocoaPods analytics disabled
+ENV['COCOAPODS_DISABLE_STATS'] = 'true'
+
+# Incrementiamo l'uso di framework dinamici e moduli
 use_frameworks!
 use_modular_headers!
 
-target 'Runner' do
-  # Includi tutte le dipendenze di Flutter automaticamente
-  flutter_install_ios_engine_pod File.dirname(File.realpath(__FILE__))
-  flutter_install_ios_plugin_pods File.dirname(File.realpath(__FILE__))
+project 'Runner', {
+  'Debug' => :debug,
+  'Profile' => :release,
+  'Release' => :release,
+}
 
-  # Dipendenze di Firebase
+def parse_flutter_build_mode
+  if ENV['FLUTTER_BUILD_MODE'] == nil
+    if ENV['CONFIGURATION'] == 'Release'
+      return 'release'
+    elsif ENV['CONFIGURATION'] == 'Profile'
+      return 'profile'
+    else
+      return 'debug'
+    end
+  end
+  return ENV['FLUTTER_BUILD_MODE']
+end
+
+flutter_build_mode = parse_flutter_build_mode
+# Carica le variabili generati da Flutter (se esiste lo script)
+if File.exist?('../flutter_export_environment.sh')
+  require_relative '../flutter_export_environment'
+end
+
+def flutter_root
+  generated_xcode_build_settings_path = File.expand_path(File.join('Flutter', 'Generated.xcconfig'), __dir__)
+  unless File.exist?(generated_xcode_build_settings_path)
+    raise "#{generated_xcode_build_settings_path} must exist. If you're running pod install manually, make sure \"flutter pub get\" is executed first"
+  end
+  File.dirname(File.dirname(generated_xcode_build_settings_path))
+end
+
+# Carica i metodi necessari da podhelper.rb
+require File.expand_path(File.join('packages', 'flutter_tools', 'bin', 'podhelper'), flutter_root)
+
+target 'Runner' do
+  flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
+
+  # Esempio di dipendenze aggiuntive (Firebase, Google Maps, ecc.):
   pod 'Firebase/Core'
   pod 'Firebase/Auth'
   pod 'Firebase/Firestore'
   pod 'Firebase/Storage'
   pod 'Firebase/Messaging'
   pod 'Firebase/Analytics'
-
-  # Google Maps (se necessario)
   pod 'GoogleMaps'
   pod 'GooglePlaces'
 
   target 'RunnerTests' do
     inherit! :search_paths
-    # Pods per testing
+  end
+end
+
+post_install do |installer|
+  installer.pods_project.targets.each do |target|
+    flutter_additional_ios_build_settings(target)
   end
 end

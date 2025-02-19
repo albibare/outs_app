@@ -1,0 +1,33 @@
+workflows:
+  ios-app:
+    name: iOS Build
+    max_build_duration: 60
+    instance_type: mac_mini_m1
+
+    environment:
+      flutter: stable
+      xcode: latest
+      cocoapods: default
+      vars:
+        BUNDLE_ID: "com.example.outs"  # Modifica con il tuo bundle ID reale
+        APPLE_TEAM_ID: "77JCGQDNX3"  # Inserisci il tuo Apple Team ID
+
+    scripts:
+      - name: Install dependencies
+        script: |
+          flutter clean
+          flutter pub get
+          cd ios && pod install && cd ..
+
+      - name: Build iOS
+        script: |
+          flutter build ios --no-codesign
+
+    artifacts:
+      - build/ios/iphoneos/*.app
+      - build/ios/ipa/*.ipa
+
+    publishing:
+      email:
+        recipients:
+          - "tuo@email.com"
