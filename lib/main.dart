@@ -54,7 +54,7 @@ Future<void> main() async {
   print("[DEBUG] runApp eseguito.");
 }
 
-/// MyApp utilizza AuthWrapper per mostrare la LoginPage se l'utente non è autenticato
+/// MyApp utilizza AuthWrapper per mostrarare la LoginPage se l'utente non è autenticato
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -1554,11 +1554,16 @@ class EventsPageState extends State<EventsPage> {
                       FontAwesomeIcons.personRunning,
                       size: 24,
                     ),
-                    label: Text(
-                      _selectedDisciplines.isEmpty
-                          ? 'Sport'
-                          : _selectedDisciplines.join(', '),
-                      style: const TextStyle(fontSize: 15),
+                    label: Center(
+                      child: Text(
+                        _selectedDisciplines.isEmpty
+                            ? 'Sport'
+                            : _selectedDisciplines.join(', '),
+                        style: const TextStyle(fontSize: 15),
+                        textAlign: TextAlign.center,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFEBB744),
@@ -1743,9 +1748,14 @@ class ProfilePage extends StatelessWidget {
         actions: [
           IconButton(
             onPressed: () async {
-              // Logout Firebase e Google
+              // Logout Firebase e Google e naviga verso la LoginPage
               await FirebaseAuth.instance.signOut();
               await GoogleSignIn().signOut();
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (_) => const LoginPage()),
+                (route) => false,
+              );
             },
             icon: const Icon(Icons.exit_to_app),
             tooltip: 'Logout',
@@ -1998,11 +2008,11 @@ void showCreateEventGlobalDialog(
   final organizerNumberController = TextEditingController(text: '1234567890');
   bool showOrganizerNumber = false;
 
+  // Variabile per la multi-selezione degli sport (sostituisce il vecchio selectedDiscipline)
+  List<String> selectedSports = initialDiscipline != null ? [initialDiscipline] : [];
+
   DateTime? pickedDate;
   TimeOfDay? pickedTime;
-
-  String? selectedDiscipline = initialDiscipline;
-  String? selectedDifficulty;
 
   bool showAdditionalDetails = false;
 
@@ -2131,7 +2141,7 @@ void showCreateEventGlobalDialog(
     print("[DEBUG] In createEvent: title: ${titleController.text}");
     print(
         "[DEBUG] In createEvent: pickedDate: $pickedDate, pickedTime: $pickedTime");
-    print("[DEBUG] In createEvent: selectedDiscipline: $selectedDiscipline");
+    print("[DEBUG] In createEvent: selectedSports: $selectedSports");
     print("[DEBUG] In createEvent: location: ${locationController.text}");
     print("[DEBUG] In createEvent: description: ${descriptionController.text}");
     print(
@@ -2140,7 +2150,7 @@ void showCreateEventGlobalDialog(
     if (titleController.text.isNotEmpty &&
         pickedDate != null &&
         pickedTime != null &&
-        selectedDiscipline != null &&
+        selectedSports.isNotEmpty &&
         locationController.text.isNotEmpty &&
         descriptionController.text.isNotEmpty &&
         chosenLat != null &&
@@ -2195,10 +2205,10 @@ void showCreateEventGlobalDialog(
             'Indirizzo': locationController.text,
           },
           'Description': descriptionController.text,
-          'Discipline': selectedDiscipline ?? '',
+          'Discipline': selectedSports,
           'Distance': distanceController.text,
           'Duration': durationController.text,
-          'Difficulty_Level': selectedDifficulty ?? '-',
+          'Difficulty_Level': '-', // il livello di difficoltà lo gestisci in eventuali dettagli aggiuntivi
           'GPX Track': gpxUrl ?? gpxTrackController.text,
           'Organizer Name': organizerNameController.text,
           'Organizer Number':
@@ -2207,7 +2217,7 @@ void showCreateEventGlobalDialog(
         };
 
         await FirebaseFirestore.instance
-            .collection(selectedDiscipline!)
+            .collection(selectedSports.first) // per semplicità, si usa il primo sport selezionato
             .add(eventData);
 
         print("[DEBUG] Event created successfully.");
@@ -2226,8 +2236,7 @@ void showCreateEventGlobalDialog(
         locationController.clear();
         pickedDate = null;
         pickedTime = null;
-        selectedDiscipline = null;
-        selectedDifficulty = null;
+        selectedSports = [];
         chosenLat = null;
         chosenLng = null;
       } catch (e) {
@@ -2245,7 +2254,7 @@ void showCreateEventGlobalDialog(
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
               content: Text(
-                  'Compila correttamente tutti i campi, incluse data e luogo.')),
+                  'Compila correttamente tutti i campi, incluse data, luogo e sport.')),
         );
       }
     }
@@ -2293,7 +2302,8 @@ void showCreateEventGlobalDialog(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: SizedBox(
-                  width: MediaQuery.of(ctx).size.width,
+                  // Modifica 4: la finestra ora occupa il 95% dello schermo in larghezza
+                  width: MediaQuery.of(ctx).size.width * 0.95,
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -2346,24 +2356,81 @@ void showCreateEventGlobalDialog(
                         ),
                       ),
                       const SizedBox(height: 16),
-                      const Text('Disciplina *'),
-                      DropdownButton<String>(
-                        value: selectedDiscipline,
-                        hint: const Text('Seleziona disciplina'),
-                        isExpanded: true,
-                        onChanged: (String? newValue) {
-                          setStateDialog(() {
-                            selectedDiscipline = newValue;
+                      // Modifica 5: Sostituisco "Disciplina" con multi-selezione "Sport"
+                      const Text('Sport *'),
+                      GestureDetector(
+                        onTap: () async {
+                          List<String> tempSelected = List.from(selectedSports);
+                          await showDialog(
+                            context: ctx,
+                            builder: (context) {
+                              return StatefulBuilder(
+                                builder: (context, setStateInner) {
+                                  return AlertDialog(
+                                    title: const Text('Seleziona sport'),
+                                    content: SingleChildScrollView(
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: allDisciplines.map((sport) {
+                                          final bool isSelected =
+                                              tempSelected.contains(sport);
+                                          return CheckboxListTile(
+                                            title: Text(sport),
+                                            value: isSelected,
+                                            onChanged: (bool? value) {
+                                              setStateInner(() {
+                                                if (value == true) {
+                                                  tempSelected.add(sport);
+                                                } else {
+                                                  tempSelected.remove(sport);
+                                                }
+                                              });
+                                            },
+                                          );
+                                        }).toList(),
+                                      ),
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.pop(context, null);
+                                        },
+                                        child: const Text('Annulla'),
+                                      ),
+                                      ElevatedButton(
+                                        onPressed: () {
+                                          Navigator.pop(context, tempSelected);
+                                        },
+                                        child: const Text('Conferma'),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
+                            },
+                          ).then((result) {
+                            if (result != null) {
+                              setStateDialog(() {
+                                selectedSports = result;
+                              });
+                            }
                           });
                         },
-                        items: allDisciplines.map<DropdownMenuItem<String>>(
-                          (String value) {
-                            return DropdownMenuItem<String>(
-                              value: value,
-                              child: Text(value),
-                            );
-                          },
-                        ).toList(),
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 12, horizontal: 8),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            selectedSports.isEmpty
+                                ? 'Seleziona sport'
+                                : selectedSports.join(', '),
+                            style: const TextStyle(fontSize: 16),
+                          ),
+                        ),
                       ),
                       const SizedBox(height: 16),
                       if (showAdditionalDetails) ...[
@@ -2387,12 +2454,12 @@ void showCreateEventGlobalDialog(
                         const SizedBox(height: 16),
                         const Text('Livello di Difficoltà'),
                         DropdownButton<String>(
-                          value: selectedDifficulty,
+                          value: null,
                           hint: const Text('Seleziona il livello'),
                           isExpanded: true,
                           onChanged: (value) {
                             setStateDialog(() {
-                              selectedDifficulty = value;
+                              // Puoi gestire il livello se necessario
                             });
                           },
                           items: difficultyLevels

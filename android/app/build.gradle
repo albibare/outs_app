@@ -7,7 +7,7 @@ plugins {
 android {
     namespace = "com.outs.app"
     compileSdk = 34  // 🔥 Impostato a SDK 34
-    ndkVersion = flutter.ndkVersion
+    ndkVersion = "27.0.12077973"  // Imposta esplicitamente la versione corretta del NDK
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
@@ -31,6 +31,10 @@ android {
             signingConfig signingConfigs.debug
         }
     }
+}
+
+dependencies {
+    implementation "androidx.appcompat:appcompat:1.6.1" // Aggiunta la dipendenza per AppCompat
 }
 
 flutter {

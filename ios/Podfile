@@ -6,8 +6,9 @@ use_frameworks!
 use_modular_headers!
 
 target 'Runner' do
-  # Includi le dipendenze di Flutter
-  install_all_flutter_pods File.dirname(File.realpath(__FILE__))
+  # Includi tutte le dipendenze di Flutter automaticamente
+  flutter_install_ios_engine_pod File.dirname(File.realpath(__FILE__))
+  flutter_install_ios_plugin_pods File.dirname(File.realpath(__FILE__))
 
   # Dipendenze di Firebase
   pod 'Firebase/Core'
@@ -17,7 +18,7 @@ target 'Runner' do
   pod 'Firebase/Messaging'
   pod 'Firebase/Analytics'
 
-  # Google Maps (se lo usi)
+  # Google Maps (se necessario)
   pod 'GoogleMaps'
   pod 'GooglePlaces'
 
